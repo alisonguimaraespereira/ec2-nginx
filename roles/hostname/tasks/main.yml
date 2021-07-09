@@ -1,0 +1,7 @@
+- name: Define Hostname
+  hostname: 
+    name: "{{ hostname }}"
+  
+- name: Disable SELinux
+  selinux:
+    state: disabled

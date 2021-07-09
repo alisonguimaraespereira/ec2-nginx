@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e
+
+#Path Variable
+dir=$pwd
+export ANSIBLE_CONFIG="ansible.cfg"
+case $1 in
+   up)
+echo "Apply Terraform Plan"
+cd "$dir"
+                #Inicia o Terraform
+sudo terraform init
+#Implementa a Infra Estrutura
+sudo terraform apply -auto-approve
+#Efetua o Download do terraform state
+sudo terraform show -json > terraform.tfstate.in
+#Provisionamento da Infra Estrutura
+sudo terraform-inventory -inventory terraform.tfstate.in > hosts
+#Tratamento para playbook
+sudo chmod +x inventory_fix.sh
+sudo ./inventory_fix.sh
+#call Ansible
+echo "Aguardando Inicio da Instancia"
+sleep 15
+ansible-playbook -u ec2-user playbook.yml -i hosts
+;;
+  down)
+    echo "Destroy Terraform Plan"
+cd "$dir"
+                sudo terraform destroy -auto-approve
+rm -rf .terraform*                
+rm -f terraform*
+rm -f hosts
+;;
+  *)
+echo "Please, Inform  up or down"
+;;
+
+  esac
+

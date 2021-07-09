@@ -1,0 +1,4 @@
+---
+###EXAMPLE
+app_name: 
+hostname: "{{ prefix_stack_hostname }}{{ app_name }}{{ prefix_stack_name }}{{(groups.k8s.index(inventory_hostname) + 1)}}"

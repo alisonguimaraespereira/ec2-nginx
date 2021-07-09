@@ -1,0 +1,13 @@
+---
+# defaults file for lvm-ansible-role
+
+lvm_packages:
+  EL:
+    - "lvm2"
+    - "sg3_utils"
+    - "parted"
+    - "util-linux"
+
+lvm_volumes: []
+
+lvm_auto_remount: True

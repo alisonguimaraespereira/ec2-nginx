@@ -1,0 +1,50 @@
+---
+# tasks file for lvm-ansible-role
+
+- name: Remove old mount point from fstab in case of change
+  lineinfile:
+    dest: /etc/fstab
+    regexp: "^/dev/{{ item.vg_name }}/{{ item.lv_name }} (?!.*{{ item.mount }} ).*"
+    state: absent
+  register: regex_fstab
+  loop: "{{ lvm_volumes }}"
+  when: >
+    lvm_auto_remount and
+    item.mount is defined
+
+- name: Unmount old mount point in case of change
+  command: umount /dev/{{ item.0.vg_name }}/{{ item.0.lv_name }}
+  when: >
+    item.1.msg is defined and
+    'line(s) removed' in item.1.msg and
+    lvm_auto_remount
+  loop: "{{ lvm_volumes | zip(regex_fstab.results) | list }}"
+
+- name: Add user nginx
+  user:
+    name: nginx
+    comment: Nginx
+
+- name: Mount volume
+  mount:
+    name: "{{ item.mount }}"
+    src: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
+    fstype: "{{ item.filesystem | default ('xfs') }}"
+    state: mounted
+    opts: "{{ item.mount_options | default('defaults') }}"
+  loop: "{{ lvm_volumes }}"
+  when: >
+    (item.state is not defined or item.state == "present") and
+    (item.mounted is not defined or item.mounted)
+
+- name: Ensure mount paths permissions
+  file:
+    path: "{{ item.mount }}"
+    state: directory
+    owner: "{{ item.owner | default ('nginx') }}"
+    group: "{{ item.group | default ('root') }}"
+    mode: "{{ item.mode | default ('0775') }}"
+  loop: "{{ lvm_volumes }}"
+  when: >
+    (item.state is not defined or item.state == "present") and
+    (item.mounted is not defined or item.mounted)

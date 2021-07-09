@@ -1,0 +1,12 @@
+##NAO ALTERAR!!!!!!######
+#Role for ALL
+- hosts: nginx
+  become: true
+  vars_files:
+    - vars/lnx-nginx-std-app.yml
+  roles:
+    - hostname
+    - lvm
+    - nginx
+
+##FIM NAO ALTERAR!!!!!!######

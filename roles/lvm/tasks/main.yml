@@ -1,0 +1,28 @@
+---
+# tasks file for lvm-ansible-role
+
+- name: Install necessary packages
+  package:
+    name: "{{ lvm_packages['EL'] }}"
+    state: present
+
+- name: Get partition list
+  command: lsblk
+  register: lsblk_list
+  changed_when: false
+
+- name: Create lvm volume(s)
+  import_tasks: create-lvm.yml
+  when: lvm_volumes
+
+- name: Mount lvm volume(s)
+  import_tasks: mount-lvm.yml
+  when: lvm_volumes
+
+- name: Unmount lvm volume(s)
+  import_tasks: unmount-lvm.yml
+  when: lvm_volumes
+
+- name: Remove lvm volume(s)
+  import_tasks: remove-lvm.yml
+  when: lvm_volumes
